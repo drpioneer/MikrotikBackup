@@ -1,11 +1,10 @@
 # Script save settings and deleting old files
-# https://forummikrotik.ru/viewtopic.php?p=84538#p84538
-# Idea: https://forummikrotik.ru/viewtopic.php?t=7357
-# tested on ROS 6.49.3
-# updated 2022/03/23
+# https://forummikrotik.ru/viewtopic.php?t=7357
+# tested on ROS 6.49.5
+# updated 2022/04/08
 
 :do {
-    :local daysAgo 30;
+    :local daysAgo 20;
     :local autoDiskSelection true;
     :local diskName "flash";
 
@@ -23,7 +22,6 @@
 
     # Main body of the script
     :local nameID [system identity get name];
-    :local currentDate [system clock get date];
     :put "$[system clock get time] - Start saving settings and deleting old files on '$nameID' router.";
     :if ($autoDiskSelection) do={
         :set $diskName [$DiskFinder];
@@ -39,6 +37,7 @@
         :set filterName ($nameID."_");
     }
     :local monthsOfYear ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec");
+    :local currentDate  [system clock get date];
     :local currentDay   [:pick $currentDate 4 6 ];
     :local currentMonth [:pick $currentDate 0 3 ];
     :local currentYear  [:pick $currentDate 7 11];
@@ -73,4 +72,3 @@
     /log info "Backup completed successfully.";
     :put "$[system clock get time] - End of saving settings and delete old files on '$nameID' router .";
 } on-error={ /log warning ("Script error. Backup troubles.") }
-
