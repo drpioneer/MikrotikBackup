@@ -1,10 +1,10 @@
 # Script save settings and deleting old files
 # https://forummikrotik.ru/viewtopic.php?t=7357
 # tested on ROS 6.49.5
-# updated 2022/04/08
+# updated 2022/04/09
 
 :do {
-    :local daysAgo 20;
+    :local maxDaysAgo 30;
     :local autoDiskSelection true;
     :local diskName "flash";
 
@@ -42,25 +42,31 @@
     :local currentMonth [:pick $currentDate 0 3 ];
     :local currentYear  [:pick $currentDate 7 11];
     :local idxCurrMonth ([:find $monthsOfYear $currentMonth -1 ] +1);
-    :foreach fileIndex in=[file find] do={
-        :do {
-            :local fileDate   [file get number=$fileIndex creation-time];
-            :set   fileDate   [:pick $fileDate 0 11];
-            :local fileMonth  [:pick $fileDate 0 3 ];
-            :set   fileMonth ([:find $monthsOfYear $fileMonth -1 ] +1);
-            :local fileDay    [:pick $fileDate 4 6 ];
-            :local fileYear   [:pick $fileDate 7 11];
-            :local fileName   [file get number=$fileIndex name];
-            :local sum 0;
-            :set sum ($sum + (($currentYear  - $fileYear)  * 365));
-            :set sum ($sum + (($idxCurrMonth - $fileMonth) * 30 ));
-            :set sum ($sum + ($currentDay - $fileDay));
-            :if ($sum >= $daysAgo && [file get number=$fileIndex name]~$filterName) do={
-                /file remove [find name~$fileName];
-                :put "$[system clock get time] - Deleting outdated file: '$fileName'.";
-            }
-        } on-error={ /log warning ("Script error. Error deleting outdated files.") }
-    }
+    :local hddFree 0;
+    :do {
+        :foreach fileIndex in=[file find] do={
+            :do {
+                :local fileDate   [file get number=$fileIndex creation-time];
+                :set   fileDate   [:pick $fileDate 0 11];
+                :local fileMonth  [:pick $fileDate 0 3 ];
+                :set   fileMonth ([:find $monthsOfYear $fileMonth -1 ] +1);
+                :local fileDay    [:pick $fileDate 4 6 ];
+                :local fileYear   [:pick $fileDate 7 11];
+                :local fileName   [file get number=$fileIndex name];
+                :local sum 0;
+                :set sum ($sum + (($currentYear  - $fileYear)  * 365));
+                :set sum ($sum + (($idxCurrMonth - $fileMonth) * 30 ));
+                :set sum ($sum + ($currentDay - $fileDay));
+                :if ($sum >= $maxDaysAgo && [file get number=$fileIndex name]~$filterName) do={
+                    /file remove [find name~$fileName];
+                    :put "$[system clock get time] - Deleting outdated file: '$fileName'.";
+                }
+            } on-error={ /log warning ("Script error. Error deleting outdated files.") }
+        }
+        :set hddFree ([/system resource get free-hdd-space]/([/system resource get total-hdd-space]/100));
+        :set maxDaysAgo ($maxDaysAgo-1);
+    } while=(($hddFree < 5) && [:len [/disk find]] = 0) ;
+
     :local fileNameCreate ($filterName.$currentYear.$currentMonth.$currentDay);
     :put "$[system clock get time] - Generating new file name: '$fileNameCreate'";
     :put "$[system clock get time] - Saving a backup copy.";
