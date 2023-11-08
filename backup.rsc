@@ -1,15 +1,14 @@
 # Script save settings and deleting old files
 # https://forummikrotik.ru/viewtopic.php?t=7357
 # tested on ROS 6.49.10 & 7.11.2
-# updated 2023/10/23
+# updated 2023/11/08
 
 :do {
     :local maxDaysAgo 30;
     :local autoDiskSelection true;
-    :local diskName "flash";
-    :local nameID [system identity get name];
+    :local diskName "";
 
-    # Automatic disk selection function
+    # --------------------------------------------------------------------------------- # automatic disk selection function
     :local DiskFinder do={
         :local dskName "";
         :local allDisks [:toarray [/file find type="disk"]];
@@ -21,7 +20,6 @@
         :do {:if ($cntExtDisk!=0) do={:set dskName [/disk get [($extDisks->0)] name]}} on-error={}
         :return ($dskName);
     }
-
 
     # --------------------------------------------------------------------------------- # time translation function to UNIX-time
     :global DateTime2EpochDEL do={                                                      # https://forum.mikrotik.com/viewtopic.php?t=75555#p994849
@@ -73,14 +71,9 @@
         :return "$yearStart/$[$ZeroFill $mnthStart]/$[$ZeroFill $dayStart] $timeStart";
     }
 
-    # --------------------------------------------------------------------------------- # current time in nice format output function
-    :local CurrentTime do={
-        :global DateTime2EpochDEL;
-        :global UnixToDateTimeDEL;
-        :return [$UnixToDateTimeDEL [$DateTime2EpochDEL]];
-    }
-
-    # Main body of the script
+    # --------------------------------------------------------------------------------- # main body of the script
+    :local secondsAgo ($maxDaysAgo*86400);
+    :local nameID [system identity get name];
     :put "$[system clock get time]\tStart saving settings and deleting old files on '$nameID' router";
     :if ($autoDiskSelection) do={
         :set $diskName [$DiskFinder];
@@ -91,40 +84,28 @@
     :if ([:len $diskName]!=0) do={
         :set filterName ($diskName."/".$nameID."_");
     } else={:set filterName ($nameID."_")}
-    :local monthsOfYear ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec");
-    :local currentTime  [$CurrentTime];
-    :local currentYear  [:pick $currentTime 0 4];
-    :local currentMonth [:pick $currentTime 5 7];
-    :set   currentMonth ($monthsOfYear->[($currentMonth-1)]);
-    :local currentDay   [:pick $currentTime 8 10];
-    :local idxCurrMonth ([:find $monthsOfYear $currentMonth -1]+1);
     :local hddFree 0;
     :local cntExtDsk 0;
     :do {:set cntExtDsk [:len [/disk find]]} on-error={}
     :do {
         :foreach fileIndex in=[/file find] do={
-            :do {
-                :local fileDate [/file get number=$fileIndex creation-time];
-                :set fileDate [:pick $fileDate 0 11];
-                :local fileMonth [:pick $fileDate 0 3 ];
-                :set fileMonth ([:find $monthsOfYear $fileMonth -1 ]+1);
-                :local fileDay  [:pick $fileDate 4 6 ];
-                :local fileYear [:pick $fileDate 7 11];
-                :local fileName [/file get number=$fileIndex name];
-                :local sum 0;
-                :set sum ($sum+(($currentYear-$fileYear)*365));
-                :set sum ($sum+(($idxCurrMonth-$fileMonth)*30));
-                :set sum ($sum+($currentDay-$fileDay));
-                :if (($sum>=$maxDaysAgo) && ([file get number=$fileIndex name]~$filterName)) do={
-                    /file remove [find name~$fileName];
-                    :put "$[system clock get time]\tDeleting outdated file: '$fileName'";
-                }
-            } on-error={/log warning ("Error deleting outdated files")}
+            :local fileTime [$DateTime2EpochDEL [/file get number=$fileIndex creation-time]];
+            :local fileName [/file get number=$fileIndex name];
+            :local timeDiff ([$DateTime2EpochDEL ""]-$fileTime);
+            :if (($timeDiff>=$secondsAgo) && ([file get number=$fileIndex name]~$filterName)) do={
+                /file remove [find name~$fileName];
+                :put "$[system clock get time]\tDeleting outdated file: '$fileName'";
+            }
         }
         :set hddFree ([/system resource get free-hdd-space]/([/system resource get total-hdd-space]/100));
         :set maxDaysAgo ($maxDaysAgo-1);
     } while=($hddFree<5 && $cntExtDsk=0 && $maxDaysAgo>0);
     :if ($maxDaysAgo>0) do={
+        :local monthsOfYear ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec");
+        :local currentTime  [$UnixToDateTimeDEL [$DateTime2EpochDEL ""]];
+        :local currentYear  [:pick $currentTime 0 4];
+        :local currentMonth ($monthsOfYear->[([:pick $currentTime 5 7] -1)]);
+        :local currentDay   [:pick $currentTime 8 10];
         :local fileNameCreate ($filterName.$currentYear.$currentMonth.$currentDay);
         :put "$[system clock get time]\tGenerating new file name: '$fileNameCreate'";
         :put "$[system clock get time]\tSaving a backup copy";
@@ -133,7 +114,6 @@
         /export file=$fileNameCreate;
         :put "$[system clock get time]\tSaving device log";
         /log print file=$fileNameCreate;
-        /log warning "Backup completed successfully";
     } else={
         :put "$[system clock get time]\tNo disk space, free up disk space";
         /log warning ("No disk space, free up disk space for backup");
