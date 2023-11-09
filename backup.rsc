@@ -1,7 +1,7 @@
 # Script save settings and deleting old files
 # https://forummikrotik.ru/viewtopic.php?t=7357
 # tested on ROS 6.49.10 & 7.11.2
-# updated 2023/11/08
+# updated 2023/11/09
 
 :do {
     :local maxDaysAgo 30;
@@ -18,7 +18,7 @@
         :local cntExtDisk [:len $extDisks];
         :if ($cntAllDisk!=0) do={:set dskName [/file get [($allDisks->0)] name]}
         :do {:if ($cntExtDisk!=0) do={:set dskName [/disk get [($extDisks->0)] name]}} on-error={}
-        :return ($dskName);
+        :return $dskName;
     }
 
     # --------------------------------------------------------------------------------- # time translation function to UNIX-time
@@ -79,7 +79,7 @@
         :set $diskName [$DiskFinder];
         :put "$[system clock get time]\tAutomatic disk selection is ACTIVATED";
     } else={:put "$[system clock get time]\tDisk is specified by user is ACTIVATED"}
-    :put "$[system clock get time]\tWork is done on disk: '$diskName'";
+    :put "$[system clock get time]\tWork is done on disk '$diskName'";
     :local filterName "";
     :if ([:len $diskName]!=0) do={
         :set filterName ($diskName."/".$nameID."_");
@@ -94,7 +94,7 @@
             :local timeDiff ([$DateTime2EpochDEL ""]-$fileTime);
             :if (($timeDiff>=$secondsAgo) && ([file get number=$fileIndex name]~$filterName)) do={
                 /file remove [find name~$fileName];
-                :put "$[system clock get time]\tDeleting outdated file: '$fileName'";
+                :put "$[system clock get time]\tDeleting outdated file '$fileName'";
             }
         }
         :set hddFree ([/system resource get free-hdd-space]/([/system resource get total-hdd-space]/100));
@@ -107,7 +107,7 @@
         :local currentMonth ($monthsOfYear->[([:pick $currentTime 5 7] -1)]);
         :local currentDay   [:pick $currentTime 8 10];
         :local fileNameCreate ($filterName.$currentYear.$currentMonth.$currentDay);
-        :put "$[system clock get time]\tGenerating new file name: '$fileNameCreate'";
+        :put "$[system clock get time]\tGenerating new file name '$fileNameCreate'";
         :put "$[system clock get time]\tSaving a backup copy";
         /system backup save name=$fileNameCreate;
         :put "$[system clock get time]\tSaving system settings";
