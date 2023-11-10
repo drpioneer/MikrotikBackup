@@ -1,12 +1,12 @@
 # Script save settings and deleting old files
 # https://forummikrotik.ru/viewtopic.php?t=7357
 # tested on ROS 6.49.10 & 7.11.2
-# updated 2023/11/09
+# updated 2023/11/10
 
 :do {
-    :local maxDaysAgo 30;
-    :local autoDiskSelection true;
-    :local diskName "";
+    :local maxDaysAgo 30;           # maximum archive depth
+    :local autoDiskSelection true;  # automatic disk selection
+    :local diskName "flash";        # setting disk name
 
     # --------------------------------------------------------------------------------- # automatic disk selection function
     :local DiskFinder do={
