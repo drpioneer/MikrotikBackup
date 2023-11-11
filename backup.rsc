@@ -1,7 +1,8 @@
 # Script save settings and deleting old files
+# Script uses ideas by maksim.geynsberg, Jotne, rextended, Sertik, drPioneer
 # https://forummikrotik.ru/viewtopic.php?t=7357
-# tested on ROS 6.49.10 & 7.11.2
-# updated 2023/11/10
+# tested on ROS 6.49.10 & 7.12
+# updated 2023/11/11
 
 :do {
     :local maxDaysAgo 30;           # maximum archive depth
