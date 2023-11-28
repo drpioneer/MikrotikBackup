@@ -23,7 +23,7 @@
     }
 
     # --------------------------------------------------------------------------------- # time translation function to UNIX-time
-    :global DateTime2EpochDEL do={                                                      # https://forum.mikrotik.com/viewtopic.php?t=75555#p994849
+    :global DateTime2EpochBCK do={                                                      # https://forum.mikrotik.com/viewtopic.php?t=75555#p994849
         :local dTime [:tostr $1]; :local yesterDay false;                               # parses date formats:  "hh:mm:ss","mmm/dd hh:mm:ss","mmm/dd/yyyy hh:mm:ss",
         /system clock;                                                                  #                       "yyyy-mm-dd hh:mm:ss","mm-dd hh:mm:ss"
         :local cYear [get date]; :if ($cYear~"....-..-..") do={:set cYear [:pick $cYear 0 4]} else={:set cYear [:pick $cYear 7 11]}
@@ -51,7 +51,7 @@
     }
 
     # --------------------------------------------------------------------------------- # time conversion function from UNIX-time
-    :global UnixToDateTimeDEL do={                                                      # https://forum.mikrotik.com/viewtopic.php?p=977170#p977170
+    :global UnixToDateTimeBCK do={                                                      # https://forum.mikrotik.com/viewtopic.php?p=977170#p977170
         :local ZeroFill do={:return [:pick (100+$1) 1 3]}
         :local prMntDays [:toarray "0,0,31,59,90,120,151,181,212,243,273,304,334"];
         :local vGmt [:tonum [/system clock get gmt-offset]]; :if ($vGmt>0x7FFFFFFF) do={:set vGmt ($vGmt-0x100000000)}
@@ -90,9 +90,9 @@
     :do {:set cntExtDsk [:len [/disk find]]} on-error={}
     :do {
         :foreach fileIndex in=[/file find] do={
-            :local fileTime [$DateTime2EpochDEL [/file get number=$fileIndex creation-time]];
+            :local fileTime [$DateTime2EpochBCK [/file get number=$fileIndex creation-time]];
             :local fileName [/file get number=$fileIndex name];
-            :local timeDiff ([$DateTime2EpochDEL ""]-$fileTime);
+            :local timeDiff ([$DateTime2EpochBCK ""]-$fileTime);
             :if (($timeDiff>=$secondsAgo) && ([file get number=$fileIndex name]~$filterName)) do={
                 /file remove [find name~$fileName];
                 :put "$[system clock get time]\tDeleting outdated file '$fileName'";
@@ -103,7 +103,7 @@
     } while=($hddFree<5 && $cntExtDsk=0 && $maxDaysAgo>0);
     :if ($maxDaysAgo>0) do={
         :local monthsOfYear ("jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec");
-        :local currentTime  [$UnixToDateTimeDEL [$DateTime2EpochDEL ""]];
+        :local currentTime  [$UnixToDateTimeBCK [$DateTime2EpochBCK ""]];
         :local currentYear  [:pick $currentTime 0 4];
         :local currentMonth ($monthsOfYear->[([:pick $currentTime 5 7] -1)]);
         :local currentDay   [:pick $currentTime 8 10];
@@ -119,9 +119,9 @@
         :put "$[system clock get time]\tNo disk space, free up disk space";
         /log warning ("No disk space, free up disk space for backup");
     }
-    /system script environment remove [find name~"DEL"];                                # clearing memory
+    /system script environment remove [find name~"BCK"];                                # clearing memory
     :put "$[system clock get time]\tEnd of saving settings and delete old files";
 } on-error={
     /log warning ("Error backup troubles");
-    /system script environment remove [find name~"DEL"];                                # clearing memory
+    /system script environment remove [find name~"BCK"];                                # clearing memory
 }
