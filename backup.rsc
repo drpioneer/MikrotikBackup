@@ -2,7 +2,7 @@
 # Script uses ideas by maksim.geynsberg, Jotne, rextended, Sertik, drPioneer
 # https://forummikrotik.ru/viewtopic.php?t=7357
 # tested on ROS 6.49.10 & 7.12
-# updated 2023/11/11
+# updated 2023/12/20
 
 :do {
     :local maxDaysAgo 30;           # maximum archive depth
@@ -73,7 +73,6 @@
     }
 
     # --------------------------------------------------------------------------------- # main body of the script
-    :local secondsAgo ($maxDaysAgo*86400);
     :local nameID [system identity get name];
     :put "$[system clock get time]\tStart saving settings and deleting old files on '$nameID' router";
     :if ($autoDiskSelection) do={
@@ -82,16 +81,15 @@
     } else={:put "$[system clock get time]\tDisk is specified by user is ACTIVATED"}
     :put "$[system clock get time]\tWork is done on disk '$diskName'";
     :local filterName "";
-    :if ([:len $diskName]!=0) do={
-        :set filterName ($diskName."/".$nameID."_");
-    } else={:set filterName ($nameID."_")}
-    :local hddFree 0;
-    :local cntExtDsk 0;
+    :if ([:len $diskName]!=0) do={:set filterName ($diskName."/".$nameID."_")} else={:set filterName ($nameID."_")}
+    :local hddFree 0;               # free disk space
+    :local cntExtDsk 0;             # number of external drives
     :do {:set cntExtDsk [:len [/disk find]]} on-error={}
     :do {
         :foreach fileIndex in=[/file find] do={
-            :local fileTime [$DateTime2EpochBCK [/file get number=$fileIndex creation-time]];
+            :local secondsAgo ($maxDaysAgo*86400);
             :local fileName [/file get number=$fileIndex name];
+            :local fileTime [$DateTime2EpochBCK [/file get number=$fileIndex creation-time]];
             :local timeDiff ([$DateTime2EpochBCK ""]-$fileTime);
             :if (($timeDiff>=$secondsAgo) && ([file get number=$fileIndex name]~$filterName)) do={
                 /file remove [find name~$fileName];
