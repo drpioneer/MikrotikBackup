@@ -2,7 +2,7 @@
 # Script uses ideas by maksim.geynsberg, Jotne, rextended, Sertik, drPioneer
 # https://forummikrotik.ru/viewtopic.php?p=91135#p91135
 # tested on ROS 6.49.10 & 7.12
-# updated 2024/02/08
+# updated 2024/02/06
 
 :do {
   :local maxDaysAgo 180;    # maximum archive depth
