@@ -13,7 +13,15 @@
  - удаляются файлы, младше глубины архива, но при условии, что свободного места на диске не менее 4%.
  - сохраняются бэкап-файл, экспорт-файл, файл журнала со сгенеренными в п.2 именами.
 
-  В скрипте предусмотрена возможность отключения автоопределения места хранения данных, для этого переменной 'autoDiskSelection' нужно задать значение 'false', а в переменной 'diskName' потребуется указать актуальное имя накопителя (по умолчанию задано имя "flash").
+  В скрипте предусмотрена возможность отключения автоопределения места хранения данных, для этого переменной 'autoDskSel' нужно задать значение 'false', а в переменной 'diskName' потребуется указать актуальное имя накопителя (по умолчанию задано имя "flash").
 В рабочем варианте скрипт запускается по шедулеру один раз в сутки.
 
 https://forummikrotik.ru/viewtopic.php?p=91135#p91135
+
+Features:
+- automatically determines the data storage location,
+- allows you to set the archive depth in days,
+- looks after free space on the drive,
+- saves a backup file, a settings file and a log file,
+- file names is based on the device ID and date,
+- works on RouterOS 6.xx and 7.xx
