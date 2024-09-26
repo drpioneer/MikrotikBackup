@@ -2,8 +2,8 @@
 # Script uses ideas by maksim.geynsberg, Jotne, rextended, Sertik, drPioneer
 # https://github.com/drpioneer/MikrotikBackup/blob/main/backup.rsc
 # https://forummikrotik.ru/viewtopic.php?p=91135#p91135
-# tested on ROS 6.49.10 & 7.12
-# updated 2024/02/17
+# tested on ROS 6.49.17 & 7.16
+# updated 2024/09/26
 
 :do {
   :local maxDaysAgo 180;   # maximum archive depth
@@ -82,10 +82,15 @@
   :if ([:len $diskName]!=0) do={:set filterName "$diskName/$nameID_"} else={:set filterName "$nameID_"}
   :do {:set cntExtDsk [:len [/disk find]]} on-error={}
   :do {
+    :local secondsAgo ($maxDaysAgo*86400);
     :foreach fileIndex in=[/file find] do={
-      :local secondsAgo ($maxDaysAgo*86400);
       :local fileName [/file get number=$fileIndex name];
-      :local fileTime [$T2U [/file get number=$fileIndex creation-time]];
+      :local fileTime "";
+      :do {
+        :set $fileTime [$T2U [/file get number=$fileIndex creation-time]];
+      } on-error={
+        :set $fileTime [$T2U [/file get number=$fileIndex last-modified]];
+      }
       :local timeDiff ([$T2U]-$fileTime);
       :if (($timeDiff>=$secondsAgo) && ([file get number=$fileIndex name]~$filterName)) do={
         /file remove [find name~$fileName];
