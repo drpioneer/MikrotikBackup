@@ -19,6 +19,8 @@
 
 https://forummikrotik.ru/viewtopic.php?p=91135#p91135
 
+Используете скрипт - отметьте это звездочкой, Вам не сложно, а мне приятно!
+
 Features:
 - automatically determines the data storage location,
 - allows you to set the archive depth in days,
