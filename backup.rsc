@@ -105,7 +105,7 @@
     :do {
       :local dudeCfg ($fileName."dude.rsc"); :local dudeDb ($fileName."dude.db")
       /dude export file=$dudeCfg; /dude export-db backup-file=$dudeDb
-    } on-error {:put "$[$U2T [$T2U]]\tThe Dude is not detected"}
+    } on-error {:put "$[$U2T [$T2U]]\t'The  Dude' is not installed or is working with problems"}
   } else={
     :put "$[$U2T [$T2U]]\tNo disk space, free up disk space"
     /log warning "No disk space, free up disk space for backup"}
