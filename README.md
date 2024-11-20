@@ -25,8 +25,8 @@ Features:
 - automatically determines the data storage location,
 - allows you to set the archive depth in days,
 - looks after free space on the drive,
-- saves a backup file, a settings file and a log file,
-- file names is based on the device ID and date,
+- saves backup file, settings file, log file, base and settings "The Dude",
+- file names is based on the device ID, date and time,
 - works on RouterOS 6.xx and 7.xx
 - no dependencies on other software modules
 
