@@ -1,7 +1,7 @@
 # MikrotikBackup
 ## Script for backup of device settings and log with automatic storage location detection
 
-I have a variety of Mikrotik devices in my household, each of which has its own data storage features: somewhere an external USB drive is used, somewhere a built-in flash drive of the device. On some devices, the built-in disk is called 'flash' by default, while on others it is not called in any way :)
+I have a variety of Mikrotik devices in my household, each of which has its own data storage features: somewhere an external USB drive is used, somewhere a built-in flash drive of the device. On some devices, the built-in drive is named 'flash' by default, while on others it has no name. :)
 
 I wanted to create one universal backup script that will save all the settings and logs of any of these devices equally well on the currently available drive.
 
