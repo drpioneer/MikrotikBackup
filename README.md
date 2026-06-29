@@ -11,13 +11,13 @@ The algorithm of the script:
 - the data storage location is being determined. Priorities in descending order: 1. External storage, 2. Built-in storage
 - a new file name is generated using the template: 'Path/Router name_Current-Date_Current-Time'
 - all files older than the archive depth and suitable for the template are deleted: 'Path/Router name'
-- in the case when less than 4% of free space is left on the drive: files younger than the archive depth and suitable for the template: 'Path/Router name' are deleted
+- in the case when less than 4% of free space is left on the drive: files younger than the archive depth and suitable for the template: 'Path/Router name_' are deleted
 - the following files are created and saved on the drive:
-  - device settings in the format '.backup
-  - 'device configuration in '.rsc' format device
-  - log in '.txt'
-  - format The configuration of 'The Dude' in '.rsc' format
-  - The database of 'The Dude' in '.db' format
+  - device settings in the format '.backup'
+  - device configuration in '.rsc' format device
+  - log in '.txt' format 
+  - the configuration of 'The Dude' in '.rsc' format
+  - the database of 'The Dude' in '.db' format
 
 The script has the option to manually configure the path to the directory where backups are stored. To do this, disable automatic backup location detection in the script settings by setting the 'autoDskSel' variable to 'false' and specifying the full path to the target directory using the "/" characters in the 'backupPath' variable.
 
